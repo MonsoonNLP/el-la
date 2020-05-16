@@ -33,7 +33,10 @@ class MirrorFactory:
 	def _flip_noun(self, og_token):
 		if type(og_token) == type(''):
 			raise Exception('Send a spaCy document, not a string, to _flip_noun !')
-		if og_token.pos_ == "PRON":
+
+		if 'AdvType=Tim' in og_token.tag_: # don't change years
+			return None
+		elif og_token.pos_ == "PRON":
 			diff = 1 * self.noun_diff
 		else:
 			diff = 0.7 * self.noun_diff
@@ -54,9 +57,11 @@ class MirrorFactory:
 		alt_nlp = self.spacy(alt_word)[0]
 		if ((alt_nlp.pos_ not in ['NOUN', 'PRON']) or # don't allow change from noun to a verb
 			 ('NOUN__Gender=Fem' in og_token.tag_ and 'NOUN__Gender=Fem' in alt_nlp.tag_) or
-			 ('NOUN__Gender=Masc' in og_token.tag_ and 'NOUN__Gender=Masc' in alt_nlp.tag_)): # or
+			 ('NOUN__Gender=Masc' in og_token.tag_ and 'NOUN__Gender=Masc' in alt_nlp.tag_) or
+			 ('Number=Sing' in og_token.tag_ and 'Number=Plur' in alt_nlp.tag_) or
+			 ('Number=Plur' in og_token.tag_ and 'Number=Sing' in alt_nlp.tag_)): # or
 			 #(og_token.lemma_ not in alt_nlp.lemma_)):
-			 alt_word = None
+			 return None
 
 		return alt_word
 
@@ -126,8 +131,7 @@ class MirrorFactory:
 				just_saw_proper_noun = False
 
 				if token.pos_ == "NOUN" or token.pos_ == "PRON":
-					if 'AdvType=Tim' not in token.tag_: # don't change years
-						alt_word = self._flip_noun(token)
+					alt_word = self._flip_noun(token)
 
 				elif len(pairings) > 0 and token.text == pairings[0][0].text:
 					diff = self.noun_diff
