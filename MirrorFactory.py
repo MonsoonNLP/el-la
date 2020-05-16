@@ -150,4 +150,4 @@ class MirrorFactory:
 				words.append(token.text)
 			else:
 				words.append(alt_word)
-		return ' '.join(words)
+		return ' '.join(words).replace(' ,', ',').replace(' .', '.').replace('..', '.')
